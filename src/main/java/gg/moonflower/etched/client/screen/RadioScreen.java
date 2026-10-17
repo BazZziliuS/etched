@@ -49,7 +49,7 @@ public class RadioScreen extends AbstractContainerScreen<RadioMenu> implements U
             PacketDistributor.sendToServer(new SetUrlPacket(this.url.getValue()));
             Minecraft.getInstance().player.closeContainer();
         }).bounds(this.leftPos, this.topPos + this.imageHeight + 5, this.imageWidth - 24, 20).build());
-        this.addRenderableWidget(MusicSearchScreen.createButton(this, List.of(MusicSearchScreen.RADIO_BROWSER, MusicSearchScreen.SOUND_CLOUD), this.leftPos + this.imageWidth - 20, this.topPos + this.imageHeight + 5));
+        this.addRenderableWidget(MusicSearchScreen.createButton(this, List.of(MusicSearchScreen.RADIO_BROWSER, MusicSearchScreen.SOUND_CLOUD, MusicSearchScreen.AUDIUS), this.leftPos + this.imageWidth - 20, this.topPos + this.imageHeight + 5));
     }
 
     @Override

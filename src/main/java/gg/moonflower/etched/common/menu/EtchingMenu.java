@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableSet;
 import com.mojang.datafixers.util.Pair;
 import gg.moonflower.etched.api.record.PlayableRecord;
 import gg.moonflower.etched.api.record.TrackData;
+import gg.moonflower.etched.api.sound.download.ShareLinks;
 import gg.moonflower.etched.api.sound.download.SoundDownloadSource;
 import gg.moonflower.etched.api.sound.download.SoundSourceManager;
 import gg.moonflower.etched.common.component.DiscAppearanceComponent;
@@ -165,9 +166,10 @@ public class EtchingMenu extends AbstractContainerMenu implements UrlMenu {
     }
 
     private static void checkStatus(String url) throws IOException, URISyntaxException {
-        URL uri = new URI(url).toURL();
+        String directUrl = ShareLinks.toDirectUrl(url);
+        URL uri = new URI(directUrl).toURL();
         HttpURLConnection httpURLConnection = (HttpURLConnection) uri.openConnection(Proxy.NO_PROXY);
-        if (!uri.getHost().equals("www.dropbox.com")) { // Hack for dropbox returning the wrong content type for head requests
+        if (!ShareLinks.requiresGet(directUrl)) { // Hack for dropbox and drive returning the wrong content type for head requests
             httpURLConnection.setRequestMethod("HEAD");
         }
         httpURLConnection.setInstanceFollowRedirects(true);

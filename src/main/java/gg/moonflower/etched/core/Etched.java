@@ -3,8 +3,11 @@ package gg.moonflower.etched.core;
 import com.mojang.logging.LogUtils;
 import gg.moonflower.etched.api.sound.download.SoundSourceManager;
 import gg.moonflower.etched.common.component.MusicLabelComponent;
+import gg.moonflower.etched.common.sound.download.ArchiveOrgSource;
+import gg.moonflower.etched.common.sound.download.AudiusSource;
 import gg.moonflower.etched.common.sound.download.BandcampSource;
 import gg.moonflower.etched.common.sound.download.SoundCloudSource;
+import gg.moonflower.etched.common.sound.download.YandexMusicSource;
 import gg.moonflower.etched.core.compat.SophisticatedCoreCompat;
 import gg.moonflower.etched.core.data.EtchedItemModelProvider;
 import gg.moonflower.etched.core.data.EtchedRecipeProvider;
@@ -93,6 +96,9 @@ public class Etched {
     private void init(FMLCommonSetupEvent event) {
         SoundSourceManager.registerSource(new SoundCloudSource());
         SoundSourceManager.registerSource(new BandcampSource());
+        SoundSourceManager.registerSource(new YandexMusicSource());
+        SoundSourceManager.registerSource(new AudiusSource());
+        SoundSourceManager.registerSource(new ArchiveOrgSource());
 
         event.enqueueWork(() -> {
             Map<Item, CauldronInteraction> map = CauldronInteraction.WATER.map();

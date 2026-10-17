@@ -1,6 +1,7 @@
 package gg.moonflower.etched.client.screen;
 
 import gg.moonflower.etched.client.search.MusicSearchResult;
+import gg.moonflower.etched.client.search.AudiusSearchSource;
 import gg.moonflower.etched.client.search.MusicSearchSource;
 import gg.moonflower.etched.client.search.RadioBrowserSearchSource;
 import gg.moonflower.etched.client.search.SoundCloudSearchSource;
@@ -38,6 +39,7 @@ public class MusicSearchScreen extends Screen {
 
     public static final MusicSearchSource RADIO_BROWSER = new RadioBrowserSearchSource();
     public static final MusicSearchSource SOUND_CLOUD = new SoundCloudSearchSource();
+    public static final MusicSearchSource AUDIUS = new AudiusSearchSource();
 
     private static final Logger LOGGER = LogManager.getLogger();
     private static final ResourceLocation SEARCH_SPRITE = ResourceLocation.withDefaultNamespace("icon/search");
