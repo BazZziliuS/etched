@@ -39,6 +39,8 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
+import javax.net.ssl.SSLException;
+
 /**
  * @author Ocelot, Jackson
  */
@@ -47,6 +49,7 @@ public class EtchingMenu extends AbstractContainerMenu implements UrlMenu {
     public static final ResourceLocation EMPTY_SLOT_MUSIC_DISC = Etched.etchedPath("item/empty_etching_table_slot_music_disc");
     public static final ResourceLocation EMPTY_SLOT_MUSIC_LABEL = Etched.etchedPath("item/empty_etching_table_slot_music_label");
     private static final Pattern CONTENT_TYPE_PATTERN = Pattern.compile("\\s*;\\s*");
+    private static final Pattern SERVICE_UNAVAILABLE_PATTERN = Pattern.compile("^(401|403|429|5\\d\\d) ");
     private static final Cache<String, CompletableFuture<TrackData[]>> DATA_CACHE = CacheBuilder.newBuilder().expireAfterWrite(15, TimeUnit.MINUTES).build();
     private static final boolean IGNORE_CACHE = false;
     private static final Set<String> VALID_FORMATS;
@@ -250,6 +253,21 @@ public class EtchingMenu extends AbstractContainerMenu implements UrlMenu {
         super.slotsChanged(container);
     }
 
+    /**
+     * @return Whether the error means the music service could not be reached from the server, rather than the URL being wrong
+     */
+    private static boolean isServiceUnreachable(Throwable error) {
+        for (Throwable t = error; t != null; t = t.getCause()) {
+            if (t instanceof SocketTimeoutException || t instanceof ConnectException || t instanceof UnknownHostException || t instanceof SSLException) {
+                return true;
+            }
+            if (t.getMessage() != null && SERVICE_UNAVAILABLE_PATTERN.matcher(t.getMessage()).find()) { // Blocked, rate limited or broken service
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void setupResultSlot() {
         Level level = this.player.level();
         if (level.isClientSide()) {
@@ -325,11 +343,18 @@ public class EtchingMenu extends AbstractContainerMenu implements UrlMenu {
                                 data = Arrays.copyOfRange(tracks, 1, tracks.length);
                             }
                         } catch (Exception e) {
-                            PacketDistributor.sendToPlayer((ServerPlayer) this.player, new ClientboundInvalidEtchUrlPacket(e instanceof CompletionException ? e.getCause().getMessage() : e.getMessage()));
-                            if (e instanceof CompletionException ex) {
-                                throw ex;
+                            DATA_CACHE.invalidate(this.url); // Ask the service again next time instead of repeating the failure
+                            if (!isServiceUnreachable(e)) {
+                                PacketDistributor.sendToPlayer((ServerPlayer) this.player, new ClientboundInvalidEtchUrlPacket(e instanceof CompletionException ? e.getCause().getMessage() : e.getMessage()));
+                                if (e instanceof CompletionException ex) {
+                                    throw ex;
+                                }
+                                throw new CompletionException(e);
                             }
-                            throw new CompletionException(e);
+
+                            // Players resolve the URL themselves when playing, so the disc still works without the track info
+                            Etched.LOGGER.warn("Failed to get track info for {}, creating the disc without it", this.url, e);
+                            data[0] = data[0].withUrl(this.url);
                         }
                     } else if (!TrackData.isLocalSound(this.url)) {
                         try {

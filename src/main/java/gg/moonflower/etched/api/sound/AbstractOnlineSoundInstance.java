@@ -104,7 +104,7 @@ public class AbstractOnlineSoundInstance extends AbstractSoundInstance {
             }
         }
 
-        return SoundCache.getAudioStream(onlineSound.getURL(), onlineSound.getProgressListener(), onlineSound.getAudioFileType()).thenCompose(AudioSource::openStream).thenApplyAsync(stream -> {
+        return SoundCache.getAudioStream(onlineSound.getURL(), onlineSound.getProgressListener(), onlineSound.getAudioFileType()).thenComposeAsync(AudioSource::openStream, Util.nonCriticalIoPool()).thenApplyAsync(stream -> { // The source is cached, so opening it must not run on the calling thread
             onlineSound.getProgressListener().progressStartLoading();
             // Live streams never end, so looping would buffer the whole stream in memory and replay it from the start on any EOF
             boolean loop = repeatInstantly && !(stream instanceof AsyncInputStream);

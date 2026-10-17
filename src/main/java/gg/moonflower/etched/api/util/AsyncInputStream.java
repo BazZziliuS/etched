@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
@@ -167,6 +166,7 @@ public class AsyncInputStream extends InputStream {
     public int read() throws IOException {
         this.rethrowException();
         if ((this.currentData == null || this.pointer >= this.currentData.length) && this.nextBuffer()) {
+            this.rethrowException(); // The read thread may have failed while waiting for data
             return -1;
         }
         return this.currentData[this.pointer++] & 0xFF;
@@ -176,6 +176,7 @@ public class AsyncInputStream extends InputStream {
     public int read(byte[] b, int off, int len) throws IOException {
         this.rethrowException();
         if ((this.currentData == null || this.pointer >= this.currentData.length) && this.nextBuffer()) {
+            this.rethrowException(); // The read thread may have failed while waiting for data
             return -1;
         }
 
@@ -219,11 +220,7 @@ public class AsyncInputStream extends InputStream {
         this.closed = true;
         this.waitFuture.complete(null); // Force read thread to stop waiting
         this.signalDataAvailable();
-        try {
-            this.readFuture.join();
-        } catch (CompletionException | CancellationException ignored) {
-            // Read errors are already reported through read(), close() must not throw unchecked exceptions
-        }
+        // The read thread closes the source once it sees the closed flag. Waiting for it here would block the sound thread on the network
     }
 
     /**
