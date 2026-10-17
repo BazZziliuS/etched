@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
@@ -187,7 +188,11 @@ public class AsyncInputStream extends InputStream {
     public void close() throws IOException {
         this.closed = true;
         this.waitFuture.complete(null); // Force read thread to stop waiting
-        this.readFuture.join();
+        try {
+            this.readFuture.join();
+        } catch (CompletionException | CancellationException ignored) {
+            // Read errors are already reported through read(), close() must not throw unchecked exceptions
+        }
     }
 
     /**
