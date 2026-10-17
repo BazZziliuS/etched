@@ -13,11 +13,13 @@ import gg.moonflower.etched.common.component.MusicLabelComponent;
 import gg.moonflower.etched.common.component.MusicTrackComponent;
 import gg.moonflower.etched.common.item.MusicLabelItem;
 import gg.moonflower.etched.common.network.play.ClientboundInvalidEtchUrlPacket;
+import gg.moonflower.etched.common.network.play.ServerboundEtchTrackDataPacket;
 import gg.moonflower.etched.core.Etched;
 import gg.moonflower.etched.core.registry.*;
 import net.minecraft.ResourceLocationException;
 import net.minecraft.Util;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
@@ -49,6 +51,7 @@ public class EtchingMenu extends AbstractContainerMenu implements UrlMenu {
     public static final ResourceLocation EMPTY_SLOT_MUSIC_DISC = Etched.etchedPath("item/empty_etching_table_slot_music_disc");
     public static final ResourceLocation EMPTY_SLOT_MUSIC_LABEL = Etched.etchedPath("item/empty_etching_table_slot_music_label");
     private static final Pattern CONTENT_TYPE_PATTERN = Pattern.compile("\\s*;\\s*");
+    private static final int MAX_TRACK_TEXT_LENGTH = 256;
     private static final Pattern SERVICE_UNAVAILABLE_PATTERN = Pattern.compile("^(401|403|429|5\\d\\d) ");
     private static final Cache<String, CompletableFuture<TrackData[]>> DATA_CACHE = CacheBuilder.newBuilder().expireAfterWrite(15, TimeUnit.MINUTES).build();
     private static final boolean IGNORE_CACHE = false;
@@ -70,6 +73,9 @@ public class EtchingMenu extends AbstractContainerMenu implements UrlMenu {
     private final Player player;
     private String url;
     private int urlId;
+    private String clientTrackUrl;
+    private TrackData[] clientTracks;
+    private String clientTrackError;
     private long lastSoundTime;
     private CompletableFuture<?> currentRequest;
     private int currentRequestId;
@@ -301,6 +307,19 @@ public class EtchingMenu extends AbstractContainerMenu implements UrlMenu {
                     recordData = recordData.withArtist(label.artist()).withTitle(label.title());
                 }
 
+                // Clients that support it resolve the tracks themselves, since the server may not be able to reach the music service
+                boolean resolvedByClient = SoundSourceManager.isValidUrl(this.url) && ((ServerPlayer) this.player).connection.hasChannel(ServerboundEtchTrackDataPacket.TYPE);
+                if (resolvedByClient) {
+                    if (!this.url.equals(this.clientTrackUrl)) {
+                        return; // setClientTrackData will try again once the client sends the tracks
+                    }
+                    if (this.clientTrackError != null) {
+                        PacketDistributor.sendToPlayer((ServerPlayer) this.player, new ClientboundInvalidEtchUrlPacket(this.clientTrackError));
+                        return;
+                    }
+                }
+                TrackData[] clientTracks = resolvedByClient ? this.clientTracks : null;
+
                 TrackData album = recordData;
                 int currentId = this.currentRequestId = this.urlId;
                 this.currentRequest = CompletableFuture.supplyAsync(() -> {
@@ -335,7 +354,7 @@ public class EtchingMenu extends AbstractContainerMenu implements UrlMenu {
                             if (IGNORE_CACHE) {
                                 DATA_CACHE.invalidateAll();
                             }
-                            TrackData[] tracks = DATA_CACHE.get(this.url, () -> SoundSourceManager.resolveTracks(this.url, null, Proxy.NO_PROXY)).join();
+                            TrackData[] tracks = clientTracks != null ? clientTracks : DATA_CACHE.get(this.url, () -> SoundSourceManager.resolveTracks(this.url, null, Proxy.NO_PROXY)).join();
                             if (tracks.length == 1) {
                                 data = tracks;
                             } else {
@@ -413,6 +432,45 @@ public class EtchingMenu extends AbstractContainerMenu implements UrlMenu {
 
     public int getLabelIndex() {
         return this.labelIndex.get();
+    }
+
+    /**
+     * Receives the tracks the client resolved for a URL. Only plain text is kept from the client and invalid data is rejected.
+     *
+     * @param url    The URL the tracks were resolved from
+     * @param tracks The resolved tracks
+     * @param error  Why the tracks could not be resolved or an empty string
+     */
+    public void setClientTrackData(String url, List<TrackData> tracks, String error) {
+        this.clientTrackUrl = url;
+        this.clientTracks = null;
+        this.clientTrackError = null;
+        if (!error.isEmpty()) {
+            this.clientTrackError = error;
+        } else if (tracks.isEmpty()) {
+            this.clientTrackError = "No tracks found";
+        } else {
+            TrackData[] sanitized = new TrackData[tracks.size()];
+            for (int i = 0; i < sanitized.length; i++) {
+                TrackData track = tracks.get(i);
+                if (!TrackData.isValidURL(track.url())) {
+                    this.clientTrackError = "Invalid track URL";
+                    break;
+                }
+                sanitized[i] = new TrackData(track.url(), truncate(track.artist()), Component.literal(truncate(track.title().getString())));
+            }
+            if (this.clientTrackError == null) {
+                this.clientTracks = sanitized;
+            }
+        }
+
+        if (url.equals(this.url)) {
+            this.setupResultSlot();
+        }
+    }
+
+    private static String truncate(String text) {
+        return text.length() > MAX_TRACK_TEXT_LENGTH ? text.substring(0, MAX_TRACK_TEXT_LENGTH) : text;
     }
 
     @Override

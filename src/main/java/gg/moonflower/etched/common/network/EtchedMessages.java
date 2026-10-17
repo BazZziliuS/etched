@@ -31,6 +31,8 @@ public class EtchedMessages {
 
         // Server
         registrar.playToServer(ServerboundEditMusicLabelPacket.TYPE, ServerboundEditMusicLabelPacket.CODEC, EtchedServerPlayPacketHandler::handleEditMusicLabel);
+        // Optional so older clients can still join. The server resolves tracks itself for them
+        registrar.optional().playToServer(ServerboundEtchTrackDataPacket.TYPE, ServerboundEtchTrackDataPacket.CODEC, EtchedServerPlayPacketHandler::handleEtchTrackData);
 
         // Bidirectional
         registerBidirectional(registrar, SetAlbumJukeboxTrackPacket.TYPE, SetAlbumJukeboxTrackPacket.CODEC, clientHandler(() -> EtchedClientPlayPacketHandler::handleSetAlbumJukeboxTrack), EtchedServerPlayPacketHandler::handleSetAlbumJukeboxTrack);
