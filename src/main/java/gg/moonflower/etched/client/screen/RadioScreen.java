@@ -15,6 +15,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.neoforged.neoforge.network.PacketDistributor;
 
+import java.util.List;
+
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
 
 /**
@@ -46,7 +48,8 @@ public class RadioScreen extends AbstractContainerScreen<RadioMenu> implements U
         this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, button -> {
             PacketDistributor.sendToServer(new SetUrlPacket(this.url.getValue()));
             Minecraft.getInstance().player.closeContainer();
-        }).bounds((this.width - this.imageWidth) / 2, (this.height - this.imageHeight) / 2 + this.imageHeight + 5, this.imageWidth, 20).build());
+        }).bounds(this.leftPos, this.topPos + this.imageHeight + 5, this.imageWidth - 24, 20).build());
+        this.addRenderableWidget(MusicSearchScreen.createButton(this, List.of(MusicSearchScreen.RADIO_BROWSER, MusicSearchScreen.SOUND_CLOUD), this.leftPos + this.imageWidth - 20, this.topPos + this.imageHeight + 5));
     }
 
     @Override
