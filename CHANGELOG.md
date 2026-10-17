@@ -1,1 +1,5 @@
-- Add support for Sophisticated Core
+- Add in-game music search: radios search stations from Radio Browser, etching tables search SoundCloud tracks
+- Add support for AAC radio streams (.aac, .aacp)
+- Fix SoundCloud tracks failing to play since SoundCloud stopped serving MP3
+- Fix radios jumping back several minutes after short network stalls
+- Fix "Tried to release unknown channel" errors and a crash on disconnect after a stream connection dropped
