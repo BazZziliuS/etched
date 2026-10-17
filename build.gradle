@@ -137,13 +137,13 @@ dependencies {
         }
     }
     additionalRuntimeClasspath("com.github.umjammer:jlayer:1.0.3")
-    jarJar(implementation("de.sfuhrm:jaad")) {
+    jarJar(implementation("com.tianscar.javasound:jaad")) {
         version {
-            strictly '[0.8.7,0.9)'
-            prefer '0.8.7'
+            strictly '[0.9.4,1.0)'
+            prefer '0.9.4'
         }
     }
-    additionalRuntimeClasspath("de.sfuhrm:jaad:0.8.7")
+    additionalRuntimeClasspath("com.tianscar.javasound:jaad:0.9.4")
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

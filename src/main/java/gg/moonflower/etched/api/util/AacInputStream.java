@@ -1,8 +1,7 @@
 package gg.moonflower.etched.api.util;
 
-import net.sourceforge.jaad.aac.AACException;
+import net.sourceforge.jaad.SampleBuffer;
 import net.sourceforge.jaad.aac.Decoder;
-import net.sourceforge.jaad.aac.SampleBuffer;
 import net.sourceforge.jaad.adts.ADTSDemultiplexer;
 import org.jetbrains.annotations.NotNull;
 
@@ -42,7 +41,7 @@ public class AacInputStream extends InputStream {
 
         this.source = source;
         this.demultiplexer = new ADTSDemultiplexer(new SequenceInputStream(new ByteArrayInputStream(probe), source));
-        this.decoder = new Decoder(this.demultiplexer.getDecoderSpecificInfo());
+        this.decoder = Decoder.create(this.demultiplexer.getDecoderInfo());
         this.sampleBuffer = new SampleBuffer();
         this.sampleBuffer.setBigEndian(false);
         this.buffer = ByteBuffer.allocate(0);
@@ -103,7 +102,7 @@ public class AacInputStream extends InputStream {
 
             try {
                 this.decoder.decodeFrame(frame, this.sampleBuffer);
-            } catch (AACException e) {
+            } catch (RuntimeException e) { // Corrupt frames can fail with any exception inside the decoder
                 if (this.format == null || ++corruptFrames > MAX_CORRUPT_FRAMES) {
                     throw new IOException(e);
                 }
