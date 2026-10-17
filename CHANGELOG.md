@@ -1,6 +1,5 @@
-- Etching tables now look up track info on the client, so discs can be made on servers that can't reach SoundCloud
-- Fix the game freezing when a radio or disc plays a URL that was played before
-- Fix turning off a radio blocking the sound thread on a stalled connection
-- Add timeouts to radio streams and SoundCloud requests
-- Log why SoundCloud could not be reached instead of failing silently
-- Don't cache failed track lookups for 15 minutes
+- Add Yandex Music support for tracks, albums and playlists (30-second previews unless an OAuth token is set in the client config)
+- Add Audius support for tracks, albums and playlists, and Audius search in etching tables and radios
+- Add Internet Archive support for items and single files
+- Google Drive and Dropbox share links now play without converting them to direct links
+- Hold Shift over an etching table or radio to see the supported sites
