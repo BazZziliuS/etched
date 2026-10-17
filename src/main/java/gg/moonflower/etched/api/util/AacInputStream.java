@@ -4,6 +4,7 @@ import net.sourceforge.jaad.SampleBuffer;
 import net.sourceforge.jaad.aac.Decoder;
 import net.sourceforge.jaad.adts.ADTSDemultiplexer;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.sound.sampled.AudioFormat;
 import java.io.ByteArrayInputStream;
@@ -14,9 +15,8 @@ import java.io.SequenceInputStream;
 import java.nio.ByteBuffer;
 
 /**
- * Dynamically converts AAC data in ADTS frames (.aac, .aacp radio streams) to raw audio as the stream is read.
- *
- * @author Ocelot
+ * Dynamically converts AAC data to raw audio as the stream is read. Supports ADTS frames (.aac, .aacp radio streams)
+ * and fragmented MP4 (HLS audio, such as SoundCloud).
  */
 public class AacInputStream extends InputStream {
 
@@ -25,7 +25,7 @@ public class AacInputStream extends InputStream {
     private static final int MAX_CORRUPT_FRAMES = 10; // Live streams can contain a few broken frames, so skip them instead of stopping
 
     private final InputStream source;
-    private final ADTSDemultiplexer demultiplexer;
+    private final FrameSource frames;
     private final Decoder decoder;
     private final SampleBuffer sampleBuffer;
     private ByteBuffer buffer;
@@ -35,13 +35,26 @@ public class AacInputStream extends InputStream {
     public AacInputStream(InputStream source) throws IOException {
         // Only probe a small amount of data so callers can still reset the stream and try another format
         byte[] probe = source.readNBytes(PROBE_SIZE);
-        if (!isAdts(probe)) {
-            throw new IOException("Failed to find ADTS header");
+        InputStream stream = new SequenceInputStream(new ByteArrayInputStream(probe), source);
+        if (FragmentedMp4Reader.isMp4(probe)) {
+            FragmentedMp4Reader reader = new FragmentedMp4Reader(stream);
+            this.frames = reader::nextFrame;
+            this.decoder = Decoder.create(reader.getDecoderSpecificInfo());
+        } else if (isAdts(probe)) {
+            ADTSDemultiplexer demultiplexer = new ADTSDemultiplexer(stream);
+            this.frames = () -> {
+                try {
+                    return demultiplexer.readNextFrame();
+                } catch (EOFException e) {
+                    return null;
+                }
+            };
+            this.decoder = Decoder.create(demultiplexer.getDecoderInfo());
+        } else {
+            throw new IOException("Failed to find ADTS or MP4 header");
         }
 
         this.source = source;
-        this.demultiplexer = new ADTSDemultiplexer(new SequenceInputStream(new ByteArrayInputStream(probe), source));
-        this.decoder = Decoder.create(this.demultiplexer.getDecoderInfo());
         this.sampleBuffer = new SampleBuffer();
         this.sampleBuffer.setBigEndian(false);
         this.buffer = ByteBuffer.allocate(0);
@@ -93,10 +106,8 @@ public class AacInputStream extends InputStream {
     private boolean fillBuffer() throws IOException {
         int corruptFrames = 0;
         while (true) {
-            byte[] frame;
-            try {
-                frame = this.demultiplexer.readNextFrame();
-            } catch (EOFException e) {
+            byte[] frame = this.frames.next();
+            if (frame == null) {
                 return true;
             }
 
@@ -154,5 +165,14 @@ public class AacInputStream extends InputStream {
 
     public AudioFormat getFormat() {
         return this.format;
+    }
+
+    @FunctionalInterface
+    private interface FrameSource {
+
+        /**
+         * @return The next AAC frame or <code>null</code> at the end of the stream
+         */
+        byte @Nullable [] next() throws IOException;
     }
 }
