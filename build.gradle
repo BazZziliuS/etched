@@ -21,6 +21,7 @@ group = mod_group_id
 
 repositories {
     mavenLocal()
+    mavenCentral()
     maven { url 'https://jitpack.io' }
     exclusiveContent {
         forRepository {
@@ -130,10 +131,19 @@ dependencies {
 
     jarJar(implementation("com.github.umjammer:jlayer")) {
         version {
-            strictly '[1.0.0,)'
+            // 1.0.6 removed Obuffer
+            strictly '[1.0.0,1.0.6)'
+            prefer '1.0.3'
         }
     }
     additionalRuntimeClasspath("com.github.umjammer:jlayer:1.0.3")
+    jarJar(implementation("de.sfuhrm:jaad")) {
+        version {
+            strictly '[0.8.7,0.9)'
+            prefer '0.8.7'
+        }
+    }
+    additionalRuntimeClasspath("de.sfuhrm:jaad:0.8.7")
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
