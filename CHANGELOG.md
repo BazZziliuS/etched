@@ -1,5 +1,3 @@
-- Add Yandex Music support for tracks, albums and playlists (30-second previews unless an OAuth token is set in the client config)
-- Add Audius support for tracks, albums and playlists, and Audius search in etching tables and radios
-- Add Internet Archive support for items and single files
-- Google Drive and Dropbox share links now play without converting them to direct links
-- Hold Shift over an etching table or radio to see the supported sites
+- Fix the game freezing for everyone near a radio playing an AAC+ (and other) radio stream
+- Fix long SoundCloud tracks flooding the connection and timing players out of the server
+- Looping long tracks no longer keeps the whole track in memory
