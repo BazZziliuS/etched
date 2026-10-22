@@ -1,3 +1,4 @@
-- Fix the game freezing for everyone near a radio playing an AAC+ (and other) radio stream
-- Fix long SoundCloud tracks flooding the connection and timing players out of the server
-- Looping long tracks no longer keeps the whole track in memory
+- Radios now keep playing on Create trains and other moving contraptions
+- Right-click a radio on a moving contraption to change its station
+- Contraption Controls can turn mounted radios on and off
+- Fix radios continuing to play at their old spot after being picked up by a Create contraption
