@@ -1,2 +1,1 @@
-- Album jukeboxes on Create trains and other moving contraptions can now be opened to change discs, volume and radius
-- Changing discs no longer interrupts the track playing if its disc wasn't touched
+- Fix a crash on startup when Create Connected is installed
