@@ -22,6 +22,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.StructureBlockInfo;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.jetbrains.annotations.Nullable;
@@ -53,7 +54,10 @@ public class CreateCompat {
         MovingInteractionBehaviour.REGISTRY.register(EtchedBlocks.RADIO.get(), new RadioMovingInteraction());
         MovementBehaviour.REGISTRY.register(EtchedBlocks.ALBUM_JUKEBOX.get(), new JukeboxMovementBehaviour(true));
         MovingInteractionBehaviour.REGISTRY.register(EtchedBlocks.ALBUM_JUKEBOX.get(), new AlbumJukeboxMovingInteraction());
-        MovementBehaviour.REGISTRY.register(Blocks.JUKEBOX, new JukeboxMovementBehaviour(false));
+        // Create Connected adds its own behaviour for vanilla jukeboxes and only one can be registered
+        if (!ModList.get().isLoaded("create_connected") && MovementBehaviour.REGISTRY.get(Blocks.JUKEBOX) == null) {
+            MovementBehaviour.REGISTRY.register(Blocks.JUKEBOX, new JukeboxMovementBehaviour(false));
+        }
     }
 
     /**
