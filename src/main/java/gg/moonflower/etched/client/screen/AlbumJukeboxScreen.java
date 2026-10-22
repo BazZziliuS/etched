@@ -5,11 +5,13 @@ import gg.moonflower.etched.api.record.PlayableRecord;
 import gg.moonflower.etched.api.record.TrackData;
 import gg.moonflower.etched.api.sound.SoundTracker;
 import gg.moonflower.etched.common.blockentity.AlbumJukeboxBlockEntity;
+import gg.moonflower.etched.client.sound.AlbumPlayback;
 import gg.moonflower.etched.common.menu.AlbumJukeboxMenu;
-import gg.moonflower.etched.common.network.play.ServerboundSoundSettingsPacket;
 import gg.moonflower.etched.common.menu.SoundSettingsMenu;
+import gg.moonflower.etched.common.network.play.ServerboundSoundSettingsPacket;
 import gg.moonflower.etched.common.network.play.SetAlbumJukeboxTrackPacket;
 import gg.moonflower.etched.core.Etched;
+import gg.moonflower.etched.core.compat.create.CreateCompatClient;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -23,6 +25,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.network.PacketDistributor;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -48,17 +51,32 @@ public class AlbumJukeboxScreen extends AbstractContainerScreen<AlbumJukeboxMenu
         super(dispenserMenu, inventory, component);
         this.imageHeight = TEXTURE_HEIGHT + AlbumJukeboxMenu.SETTINGS_HEIGHT;
         this.inventoryLabelY = this.imageHeight - 94;
-        this.volume = 100;
-        this.radius = AlbumJukeboxBlockEntity.DEFAULT_RADIUS;
-        if (Minecraft.getInstance().level != null && Minecraft.getInstance().level.getBlockEntity(dispenserMenu.getPos()) instanceof AlbumJukeboxBlockEntity jukebox) {
-            this.volume = Math.round(jukebox.getVolume() * 100.0F);
-            this.radius = jukebox.getRadius();
-        }
+        this.volume = Math.round(dispenserMenu.getInitialVolume() * 100.0F);
+        this.radius = dispenserMenu.getInitialRadius();
+    }
+
+    /**
+     * @return The playback of a jukebox on a moving contraption or <code>null</code> for a placed jukebox
+     */
+    private @Nullable AlbumPlayback getContraptionPlayback() {
+        return this.menu.getContraptionId() != -1 && Etched.CREATE_LOADED ? CreateCompatClient.getAlbumPlayback(this.menu.getContraptionId(), this.menu.getPos()) : null;
     }
 
     private void update(boolean next) {
         ClientLevel level = this.minecraft.level;
         if (level == null) {
+            return;
+        }
+
+        if (this.menu.getContraptionId() != -1) {
+            AlbumPlayback playback = this.getContraptionPlayback();
+            if (playback != null) {
+                if (next) {
+                    playback.next();
+                } else {
+                    playback.previous();
+                }
+            }
             return;
         }
 
@@ -141,13 +159,21 @@ public class AlbumJukeboxScreen extends AbstractContainerScreen<AlbumJukeboxMenu
             return;
         }
 
-        BlockEntity blockEntity = level.getBlockEntity(this.menu.getPos());
-        if (!(blockEntity instanceof AlbumJukeboxBlockEntity jukebox)) {
-            return;
+        if (this.menu.getContraptionId() != -1) {
+            AlbumPlayback playback = this.getContraptionPlayback();
+            if (playback == null) {
+                return;
+            }
+            this.playingIndex = playback.getPlayingIndex();
+            this.playingTrack = playback.getTrack();
+        } else {
+            BlockEntity blockEntity = level.getBlockEntity(this.menu.getPos());
+            if (!(blockEntity instanceof AlbumJukeboxBlockEntity jukebox)) {
+                return;
+            }
+            this.playingIndex = jukebox.getPlayingIndex();
+            this.playingTrack = jukebox.getTrack();
         }
-
-        this.playingIndex = jukebox.getPlayingIndex();
-        this.playingTrack = jukebox.getTrack();
         if (this.playingIndex != -1) {
             int x = this.playingIndex % 3;
             int y = this.playingIndex / 3;

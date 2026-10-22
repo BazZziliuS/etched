@@ -103,9 +103,9 @@ public class EtchedClientPlayPacketHandler {
         }
     }
 
-    public static void handleSetContraptionRadio(ClientboundSetContraptionRadioPacket pkt, IPayloadContext ctx) {
+    public static void handleContraptionBlockData(ClientboundContraptionBlockDataPacket pkt, IPayloadContext ctx) {
         if (Etched.CREATE_LOADED) {
-            CreateCompatClient.handleSetRadio(pkt);
+            CreateCompatClient.handleBlockData(pkt);
         }
     }
 

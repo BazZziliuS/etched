@@ -5,6 +5,7 @@ import gg.moonflower.etched.api.sound.SoundTracker;
 import gg.moonflower.etched.common.block.AlbumJukeboxBlock;
 import gg.moonflower.etched.common.menu.AlbumJukeboxMenu;
 import gg.moonflower.etched.core.Etched;
+import gg.moonflower.etched.common.menu.SoundSettingsContainer;
 import gg.moonflower.etched.common.menu.SoundSettingsMenu;
 import gg.moonflower.etched.core.registry.EtchedBlocks;
 import net.minecraft.core.BlockPos;
@@ -33,7 +34,7 @@ import java.util.List;
 /**
  * @author Ocelot
  */
-public class AlbumJukeboxBlockEntity extends RandomizableContainerBlockEntity implements WorldlyContainer {
+public class AlbumJukeboxBlockEntity extends RandomizableContainerBlockEntity implements WorldlyContainer, SoundSettingsContainer {
 
     /**
      * How far away the jukebox can be heard in blocks unless changed.
@@ -230,6 +231,7 @@ public class AlbumJukeboxBlockEntity extends RandomizableContainerBlockEntity im
         return this.volume;
     }
 
+    @Override
     public void setVolume(float volume) {
         volume = Mth.clamp(volume, 0.0F, 1.0F);
         if (this.volume != volume) {
@@ -246,6 +248,7 @@ public class AlbumJukeboxBlockEntity extends RandomizableContainerBlockEntity im
         return this.radius;
     }
 
+    @Override
     public void setRadius(int radius) {
         radius = Mth.clamp(radius, SoundSettingsMenu.MIN_RADIUS, SoundSettingsMenu.MAX_RADIUS);
         if (this.radius != radius) {

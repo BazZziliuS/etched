@@ -5,7 +5,9 @@ import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import gg.moonflower.etched.common.blockentity.RadioBlockEntity;
 import gg.moonflower.etched.common.menu.RadioMenu;
 import gg.moonflower.etched.core.Etched;
+import gg.moonflower.etched.core.registry.EtchedBlocks;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.SimpleMenuProvider;
@@ -34,10 +36,14 @@ public class RadioMovingInteraction extends MovingInteractionBehaviour {
         float volume = CreateCompat.getVolume(info.nbt());
         int radius = CreateCompat.getRadius(info.nbt(), RadioBlockEntity.DEFAULT_RADIUS);
         player.openMenu(new SimpleMenuProvider((menuId, playerInventory, menuPlayer) -> new RadioMenu(menuId,
-                user -> CreateCompat.canUseRadio(contraptionEntity, localPos, user),
-                newUrl -> CreateCompat.setRadioUrl(contraptionEntity, localPos, newUrl),
-                newVolume -> CreateCompat.setRadioVolume(contraptionEntity, localPos, newVolume),
-                newRadius -> CreateCompat.setRadioRadius(contraptionEntity, localPos, newRadius)), CONTAINER_TITLE), buf -> {
+                user -> CreateCompat.canUse(contraptionEntity, localPos, EtchedBlocks.RADIO.get(), user),
+                newUrl -> {
+                    CompoundTag data = new CompoundTag();
+                    data.putString("Url", newUrl);
+                    CreateCompat.updateBlockData(contraptionEntity, localPos, data);
+                },
+                newVolume -> CreateCompat.setVolume(contraptionEntity, localPos, newVolume),
+                newRadius -> CreateCompat.setRadius(contraptionEntity, localPos, newRadius)), CONTAINER_TITLE), buf -> {
             buf.writeUtf(url);
             buf.writeFloat(volume);
             buf.writeVarInt(radius);
