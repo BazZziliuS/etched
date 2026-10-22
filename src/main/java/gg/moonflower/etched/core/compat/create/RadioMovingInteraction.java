@@ -2,6 +2,7 @@ package gg.moonflower.etched.core.compat.create;
 
 import com.simibubi.create.api.behaviour.interaction.MovingInteractionBehaviour;
 import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
+import gg.moonflower.etched.common.blockentity.RadioBlockEntity;
 import gg.moonflower.etched.common.menu.RadioMenu;
 import gg.moonflower.etched.core.Etched;
 import net.minecraft.core.BlockPos;
@@ -30,9 +31,17 @@ public class RadioMovingInteraction extends MovingInteractionBehaviour {
         }
 
         String url = info.nbt() != null ? info.nbt().getString("Url") : "";
+        float volume = CreateCompat.getVolume(info.nbt());
+        int radius = CreateCompat.getRadius(info.nbt(), RadioBlockEntity.DEFAULT_RADIUS);
         player.openMenu(new SimpleMenuProvider((menuId, playerInventory, menuPlayer) -> new RadioMenu(menuId,
                 user -> CreateCompat.canUseRadio(contraptionEntity, localPos, user),
-                newUrl -> CreateCompat.setRadioUrl(contraptionEntity, localPos, newUrl)), CONTAINER_TITLE), buf -> buf.writeUtf(url));
+                newUrl -> CreateCompat.setRadioUrl(contraptionEntity, localPos, newUrl),
+                newVolume -> CreateCompat.setRadioVolume(contraptionEntity, localPos, newVolume),
+                newRadius -> CreateCompat.setRadioRadius(contraptionEntity, localPos, newRadius)), CONTAINER_TITLE), buf -> {
+            buf.writeUtf(url);
+            buf.writeFloat(volume);
+            buf.writeVarInt(radius);
+        });
         return true;
     }
 }

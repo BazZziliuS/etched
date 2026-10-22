@@ -18,7 +18,12 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 /**
  * @author Ocelot
  */
-public class AlbumJukeboxMenu extends AbstractContainerMenu {
+public class AlbumJukeboxMenu extends AbstractContainerMenu implements SoundSettingsMenu {
+
+    /**
+     * How far the player inventory is moved down to make room for the sound settings.
+     */
+    public static final int SETTINGS_HEIGHT = 36;
 
     private final BlockPos pos;
     private final Container container;
@@ -47,12 +52,12 @@ public class AlbumJukeboxMenu extends AbstractContainerMenu {
 
         for (int n = 0; n < 3; ++n) {
             for (int m = 0; m < 9; ++m) {
-                this.addSlot(new Slot(inventory, m + n * 9 + 9, 8 + m * 18, 84 + n * 18));
+                this.addSlot(new Slot(inventory, m + n * 9 + 9, 8 + m * 18, 84 + SETTINGS_HEIGHT + n * 18));
             }
         }
 
         for (int n = 0; n < 9; ++n) {
-            this.addSlot(new Slot(inventory, n, 8 + n * 18, 142));
+            this.addSlot(new Slot(inventory, n, 8 + n * 18, 142 + SETTINGS_HEIGHT));
         }
     }
 
@@ -108,5 +113,19 @@ public class AlbumJukeboxMenu extends AbstractContainerMenu {
 
     public BlockPos getPos() {
         return this.pos;
+    }
+
+    @Override
+    public void setVolume(float volume) {
+        if (this.container instanceof AlbumJukeboxBlockEntity jukebox) {
+            jukebox.setVolume(volume);
+        }
+    }
+
+    @Override
+    public void setRadius(int radius) {
+        if (this.container instanceof AlbumJukeboxBlockEntity jukebox) {
+            jukebox.setRadius(radius);
+        }
     }
 }

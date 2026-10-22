@@ -33,6 +33,8 @@
   "screen.etched.etching_table.error.cannot_create.missing_disc": "Бланкова платівка відсутня",
   "screen.etched.etching_table.error.cannot_create.missing_label": "Музична етикетка відсутня",
   "screen.etched.etching_table.error.invalid_url": "Невірне посилання",
+  "screen.etched.volume": "Гучність: %s%%",
+  "screen.etched.radius": "Радіус: %s бл.",
   "sound_source.etched.archive_org": "Надано Internet Archive",
   "sound_source.etched.audius": "Надано Audius",
   "sound_source.etched.bandcamp": "Надано Bandcamp",

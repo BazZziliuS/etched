@@ -40,6 +40,8 @@
   "screen.etched.music_search.query": "Название трека или станции",
   "screen.etched.music_search.searching": "Поиск...",
   "screen.etched.music_search.select": "Выбрать",
+  "screen.etched.volume": "Громкость: %s%%",
+  "screen.etched.radius": "Радиус: %s бл.",
   "sound_source.etched.archive_org": "Предоставлено Internet Archive",
   "sound_source.etched.audius": "Предоставлено Audius",
   "sound_source.etched.bandcamp": "Предоставлено Bandcamp",

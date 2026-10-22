@@ -42,6 +42,8 @@
   "screen.etched.music_search.query": "Track or station name",
   "screen.etched.music_search.searching": "Searching...",
   "screen.etched.music_search.select": "Select",
+  "screen.etched.volume": "Volume: %s%%",
+  "screen.etched.radius": "Radius: %s blocks",
   "sound_source.etched.archive_org": "Provided by the Internet Archive",
   "sound_source.etched.audius": "Provided by Audius",
   "sound_source.etched.bandcamp": "Provided by Bandcamp",
