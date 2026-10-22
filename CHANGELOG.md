@@ -1,5 +1,2 @@
-- Album jukeboxes and jukeboxes now keep playing on Create trains and other moving contraptions
-- Add Sable and Create: Aeronautics support, so radios and jukeboxes on airships show what is playing
-- Add volume and radius sliders to radios and album jukeboxes, which also work on moving contraptions
-- Fix jukebox music continuing to play at its old spot after being picked up by a Create contraption
-- Fix radios restarting their stream whenever their block updated
+- Album jukeboxes on Create trains and other moving contraptions can now be opened to change discs, volume and radius
+- Changing discs no longer interrupts the track playing if its disc wasn't touched
