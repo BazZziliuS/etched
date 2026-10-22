@@ -1,4 +1,5 @@
-- Radios now keep playing on Create trains and other moving contraptions
-- Right-click a radio on a moving contraption to change its station
-- Contraption Controls can turn mounted radios on and off
-- Fix radios continuing to play at their old spot after being picked up by a Create contraption
+- Album jukeboxes and jukeboxes now keep playing on Create trains and other moving contraptions
+- Add Sable and Create: Aeronautics support, so radios and jukeboxes on airships show what is playing
+- Add volume and radius sliders to radios and album jukeboxes, which also work on moving contraptions
+- Fix jukebox music continuing to play at its old spot after being picked up by a Create contraption
+- Fix radios restarting their stream whenever their block updated
