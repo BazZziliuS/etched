@@ -28,6 +28,7 @@ public class EtchedMessages {
         registrar.playToClient(ClientboundInvalidEtchUrlPacket.TYPE, ClientboundInvalidEtchUrlPacket.CODEC, clientHandler(() -> EtchedClientPlayPacketHandler::handleSetInvalidEtch));
         registrar.playToClient(ClientboundPlayBlockMusicPacket.TYPE, ClientboundPlayBlockMusicPacket.CODEC, clientHandler(() -> EtchedClientPlayPacketHandler::handlePlayBlockMusicPacket));
         registrar.playToClient(ClientboundPlayEntityMusicPacket.TYPE, ClientboundPlayEntityMusicPacket.CODEC, clientHandler(() -> EtchedClientPlayPacketHandler::handlePlayEntityMusicPacket));
+        registrar.playToClient(ClientboundSetContraptionRadioUrlPacket.TYPE, ClientboundSetContraptionRadioUrlPacket.CODEC, clientHandler(() -> EtchedClientPlayPacketHandler::handleSetContraptionRadioUrl));
 
         // Server
         registrar.playToServer(ServerboundEditMusicLabelPacket.TYPE, ServerboundEditMusicLabelPacket.CODEC, EtchedServerPlayPacketHandler::handleEditMusicLabel);

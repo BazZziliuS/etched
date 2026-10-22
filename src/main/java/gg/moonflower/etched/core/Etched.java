@@ -9,6 +9,7 @@ import gg.moonflower.etched.common.sound.download.BandcampSource;
 import gg.moonflower.etched.common.sound.download.SoundCloudSource;
 import gg.moonflower.etched.common.sound.download.YandexMusicSource;
 import gg.moonflower.etched.core.compat.SophisticatedCoreCompat;
+import gg.moonflower.etched.core.compat.create.CreateCompat;
 import gg.moonflower.etched.core.data.EtchedItemModelProvider;
 import gg.moonflower.etched.core.data.EtchedRecipeProvider;
 import gg.moonflower.etched.core.data.loot.EtchedBlockLootProvider;
@@ -49,6 +50,7 @@ import java.util.concurrent.CompletableFuture;
 public class Etched {
 
     public static final boolean SOPHSTICATED_CORE_LOADED = ModList.get().isLoaded("sophisticatedcore");
+    public static final boolean CREATE_LOADED = ModList.get().isLoaded("create");
     public static final String MOD_ID = "etched";
     public static final Logger LOGGER = LogUtils.getLogger();
     public static final EtchedConfig.Client CLIENT_CONFIG;
@@ -101,6 +103,10 @@ public class Etched {
         SoundSourceManager.registerSource(new ArchiveOrgSource());
 
         event.enqueueWork(() -> {
+            if (CREATE_LOADED) {
+                CreateCompat.load();
+            }
+
             Map<Item, CauldronInteraction> map = CauldronInteraction.WATER.map();
             map.put(EtchedItems.BLANK_MUSIC_DISC.get(), CauldronInteraction.DYED_ITEM);
             map.put(EtchedItems.MUSIC_LABEL.get(), CauldronInteraction.DYED_ITEM);

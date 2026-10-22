@@ -23,6 +23,22 @@ repositories {
     mavenLocal()
     mavenCentral()
     maven { url 'https://jitpack.io' }
+    maven {
+        name = "Create"
+        url = "https://maven.createmod.net"
+        content {
+            includeGroup "com.simibubi.create"
+            includeGroup "net.createmod.ponder"
+            includeGroup "dev.engine-room.flywheel"
+        }
+    }
+    maven {
+        name = "Registrate"
+        url = "https://maven.ithundxr.dev/snapshots"
+        content {
+            includeGroup "com.tterrag.registrate"
+        }
+    }
     exclusiveContent {
         forRepository {
             maven {
@@ -128,6 +144,9 @@ configurations {
 dependencies {
     implementation "net.neoforged:neoforge:${neo_version}"
     implementation "maven.modrinth:sophisticated-core:1.21.1-${sophisticated_core_version}"
+    compileOnly "com.simibubi.create:create-1.21.1:${create_version}"
+    // Lets the dev client run with Create to test contraption support. Requires neo_version 21.1.219+
+    localRuntime "com.simibubi.create:create-1.21.1:${create_version}"
 
     jarJar(implementation("com.github.umjammer:jlayer")) {
         version {
@@ -216,6 +235,7 @@ publishMods {
         serverRequired = true
 
         optional "sophisticated-core"
+        optional "create"
     }
 
     github {
@@ -238,6 +258,7 @@ publishMods {
         minecraftVersions.add(minecraft_version)
 
         optional "sophisticated-core"
+        optional "create"
     }
 
     dryRun = providers.environmentVariable("GITHUB_TOKEN").getOrNull() == null

@@ -81,6 +81,16 @@ public class RadioBlockEntity extends BlockEntity implements Clearable {
         }
     }
 
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
+        // Mods like Create remove the block entity before the block, so the stop event from onRemove never reaches clients
+        if (this.loaded && this.level != null && this.level.isClientSide()) {
+            this.loaded = false;
+            SoundTracker.playRadio(null, this.getBlockState(), this.level, this.getBlockPos());
+        }
+    }
+
     public String getUrl() {
         return this.url;
     }

@@ -32,6 +32,7 @@ import net.minecraft.world.level.CommonLevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.jukebox.StorageSoundHandler;
@@ -40,6 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 /**
  * Tracks entity sounds and all etched playing sounds for the client side.
@@ -374,6 +376,40 @@ public class SoundTracker {
             record.setLoop(true); // If the sound is a file, then just continue looping that specific track
             playRecord(pos, record); // Get the new block state
         }
+    }
+
+    /**
+     * Creates a looping radio stream that follows a moving position, such as a radio mounted on a contraption.
+     *
+     * @param url      The URL of the stream
+     * @param position The current position of the radio or <code>null</code> once the radio is gone
+     * @return A new sound instance or <code>null</code> if the URL can't be played
+     * @since 5.4.0
+     */
+    public static @Nullable AbstractOnlineSoundInstance getMovingRadio(String url, Supplier<@Nullable Vec3> position) {
+        if (!TrackData.isValidURL(url) || FAILED_URLS.contains(url)) {
+            return null;
+        }
+
+        MovingOnlineSoundInstance[] sound = new MovingOnlineSoundInstance[1];
+        sound[0] = new MovingOnlineSoundInstance(url, position, 4.0F, 8, new MusicDownloadListener(RADIO, () -> sound[0].getX(), () -> sound[0].getY(), () -> sound[0].getZ()) {
+            @Override
+            public void onSuccess() {
+                if (sound[0].isStopped()) {
+                    this.clearComponent();
+                } else if (PlayableRecord.canShowMessage(sound[0].getX(), sound[0].getY(), sound[0].getZ())) {
+                    Minecraft.getInstance().gui.setNowPlaying(RADIO);
+                }
+            }
+
+            @Override
+            public void onFail() {
+                Minecraft.getInstance().gui.setOverlayMessage(Component.translatable("record." + Etched.MOD_ID + ".downloadFail", RADIO), true);
+                FAILED_URLS.add(url);
+            }
+        }, AudioSource.AudioFileType.BOTH);
+        sound[0].setLoop(true); // If the sound is a file, then just continue looping that specific track
+        return sound[0];
     }
 
     /**
